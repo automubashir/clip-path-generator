@@ -54,7 +54,6 @@ body {
     left: 0;
     top: 200%;
     margin-top: 0.5rem;
-    ;
     width: 100%;
     text-align: center;
     color: #444;
@@ -224,14 +223,21 @@ footer {
     font-size: 1.5rem;
     margin-top: 1rem;
     cursor: pointer;
+    font-family: monospace;
 }
 code {
     display: block;
     height: 100%;
+    padding: 4px;
+    border-radius: 4px;
     overflow-y: auto;
+    cursor: text;
+    outline: none;
+}
+code:focus {
+    outline: 1px solid;
 }
 footer .button {
-    content: 'Copy Code';
     position: absolute;
     padding: 0.5rem 1rem;
     border-radius: 6px 6px 0 0;

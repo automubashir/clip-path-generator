@@ -22,17 +22,18 @@ class Path {
             return console.error("container not found!");
         }
         this.container.addEventListener('mousedown', (e) => {
-            if(e.button == 0) {
+            if (e.button == 0) {
                 this.getContext(e)
-            } else if(e.button == 2) {
-                if(this.path.length<=3 || e.target.nodeName!='POINT') return;
+            } else if (e.button == 2) {
+                if (this.path.length <= 3 || e.target.nodeName != 'POINT') return;
                 this.removeAtIndex(parseInt(e.target.getAttribute('point-index')))
                 this.genPoints();
                 this.clipPath();
             }
+            this.genStrings();
         })
         this.container.addEventListener('mouseup', (e) => {
-            if(e.button == 0) {
+            if (e.button == 0) {
                 this.clicked = false;
                 this.selected_points = [];
                 this.container.classList.remove('dragging')
@@ -50,28 +51,30 @@ class Path {
                 this.container.classList.remove("path-closing");
             }
         })
+        this.code_snippet.addEventListener('keypress', (e) => {
+            stringToPath(e);
+            this.genPoints();
+            this.clipPath();
+            this.genStrings('others')
+        })
         this.footer.addEventListener('click', (e) => {
-            if(e.target.nodeName === 'COPY-CODE' || e.target.nodeName === 'CODE') {
+            if (e.target.nodeName === 'COPY-CODE') {
                 this.copyToClipboard(this.path_str)
             }
-            if(e.target.nodeName === 'ANIM-BTN') {
+            if (e.target.nodeName === 'ANIM-BTN') {
                 e.target.innerHTML = 'Coming Soon...'
-                setTimeout(x=>{
+                setTimeout(x => {
                     e.target.innerHTML = 'Animate Path'
-                },1500)
+                }, 1500)
             }
         })
         setInterval(x => {
-            this.code_snippet.innerHTML = this.path_str
-            let total_points = document.querySelector("#total_points");
-            total_points.innerHTML = this.path.length
-            let el = document.querySelector("#is_closed");
-            el.innerHTML = this.closed?'CLOSED':'OPEN';
+
         }, 1)
     }
 
     getContext = (e) => {
-        if(!this.closed) {
+        if (!this.closed) {
             this.context = 'path'
         }
 
@@ -110,11 +113,11 @@ class Path {
             this.startPath(e);
         }
 
-        if(e.target.classList.contains('clipped-box') && this.closed) {
+        if (e.target.classList.contains('clipped-box') && this.closed) {
             this.context = 'move'
             this.clicked = true;
             let point_els = document.querySelectorAll("point");
-            point_els.forEach((x,i)=>{
+            point_els.forEach((x, i) => {
                 this.selected_points[i] = {
                     element: x,
                     x: this.container.getBoundingClientRect().x + x.offsetLeft,
@@ -140,13 +143,12 @@ class Path {
         if (!this.clicked) return;
         let per = this.getCoords(e);
 
-        this.selected_points.forEach((x,i)=>{
-            if(this.context=='move') {
+        this.selected_points.forEach((x, i) => {
+            if (this.context == 'move') {
                 per = this.getCoords({
-                    clientX: x.x + (e.clientX-x.original.x),
-                    clientY: x.y + (e.clientY-x.original.y)
+                    clientX: x.x + (e.clientX - x.original.x),
+                    clientY: x.y + (e.clientY - x.original.y)
                 })
-                console.log(x.x + (e.clientX-x.original.x))
             }
             let index_ = x.element.getAttribute("point-index");
             this.path[index_] = {
@@ -191,7 +193,7 @@ class Path {
         let left_ = this.path.slice(0, index);
         temp.push(...left_)
         for (let i = index; i < new_length; i++) {
-            temp.push(this.path[i+1])
+            temp.push(this.path[i + 1])
         }
         this.path = temp;
     }
@@ -273,5 +275,33 @@ class Path {
         const angleRadians = Math.atan2(y2 - y1, x2 - x1);
         const angleDegrees = (angleRadians * 180) / Math.PI;
         return angleDegrees;
+    }
+
+    stringToPath = (e) => {
+        let str = this.code_snippet.innerHTML;
+        let path = str.split('(');
+        if (!path[1]) return;
+        path = path[1];
+        path = path.trim();
+        path = path.replaceAll(' ', '');
+        path = path.split(',');
+        path = path.map(x => {
+            let set = x.split('%');
+            return ({
+                x: set[0] || 0,
+                y: set[1] || 0,
+            })
+        })
+        this.path = path;
+    }
+
+    genStrings = (context="") => {
+        if(context!="others") {
+            this.code_snippet.innerHTML = this.path_str
+        }
+        let total_points = document.querySelector("#total_points");
+        total_points.innerHTML = this.path.length
+        let el = document.querySelector("#is_closed");
+        el.innerHTML = this.closed ? 'CLOSED' : 'OPEN';
     }
 }

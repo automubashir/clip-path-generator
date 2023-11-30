@@ -51,8 +51,8 @@ class Path {
                 this.container.classList.remove("path-closing");
             }
         })
-        this.code_snippet.addEventListener('keypress', (e) => {
-            stringToPath(e);
+        this.code_snippet.addEventListener('input', (e) => {
+            this.stringToPath(e);
             this.genPoints();
             this.clipPath();
             this.genStrings('others')
@@ -287,11 +287,16 @@ class Path {
         path = path.split(',');
         path = path.map(x => {
             let set = x.split('%');
-            return ({
+            let json = {
                 x: set[0] || 0,
                 y: set[1] || 0,
-            })
+            }
+            json['ax'] = this.container.clientWidth * json.x / 100;
+            json['ay'] = this.container.clientHeight * json.y / 100;
+
+            return json;
         })
+
         this.path = path;
     }
 

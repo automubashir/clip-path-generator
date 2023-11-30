@@ -63,6 +63,8 @@ class Path {
         })
         setInterval(x => {
             this.code_snippet.innerHTML = this.path_str
+            let total_points = document.querySelector("#total_points");
+            total_points.innerHTML = this.path.length
         }, 1)
     }
 

@@ -5,7 +5,7 @@ class Path {
         this.path_str = ""
         this.init_pos = { x: 0, y: 0 }
         this.clicked = false;
-        this.selected_point = null;
+        this.selected_points = [];
         this.context = 'path'
         this.points = []
         this.container = (container && container.innerHTML) ? container : document.querySelector('#' + container);
@@ -34,7 +34,7 @@ class Path {
         this.container.addEventListener('mouseup', (e) => {
             if(e.button == 0) {
                 this.clicked = false;
-                this.selected_point = null;
+                this.selected_points = [];
                 this.container.classList.remove('dragging')
             }
         })
@@ -65,24 +65,32 @@ class Path {
             this.code_snippet.innerHTML = this.path_str
             let total_points = document.querySelector("#total_points");
             total_points.innerHTML = this.path.length
+            let el = document.querySelector("#is_closed");
+            el.innerHTML = this.closed?'CLOSED':'OPEN';
         }, 1)
     }
 
     getContext = (e) => {
+        if(!this.closed) {
+            this.context = 'path'
+        }
+
         if (e.target.nodeName == 'LINE' && this.closed) {
+            this.context = 'point'
             let index = parseInt(e.target.getAttribute("line-index"));
             this.startPath(e, index)
             return;
         }
 
         if (e.target.nodeName == 'POINT') {
+            this.context = 'drag'
             this.clicked = true;
             this.container.classList.add('dragging')
-            this.selected_point = {
+            this.selected_points = [{
                 element: e.target,
                 x: e.clientX,
                 y: e.clientY
-            }
+            }]
 
             if (e.target.getAttribute("point-index") == '0') {
                 if (this.path.length > 2) {
@@ -101,6 +109,23 @@ class Path {
             this.header.setAttribute("hint-desc", "touch green dot to close path - min 3 dots")
             this.startPath(e);
         }
+
+        if(e.target.classList.contains('clipped-box') && this.closed) {
+            this.context = 'move'
+            this.clicked = true;
+            let point_els = document.querySelectorAll("point");
+            point_els.forEach((x,i)=>{
+                this.selected_points[i] = {
+                    element: x,
+                    x: this.container.getBoundingClientRect().x + x.offsetLeft,
+                    y: x.offsetTop + this.container.getBoundingClientRect().y,
+                    original: {
+                        x: e.clientX,
+                        y: e.clientY
+                    }
+                }
+            })
+        }
     }
 
     startPath = (e, index = 0) => {
@@ -114,13 +139,23 @@ class Path {
     movePoint = (e) => {
         if (!this.clicked) return;
         let per = this.getCoords(e);
-        let index_ = this.selected_point.element.getAttribute("point-index");
-        this.path[index_] = {
-            x: per.x,
-            y: per.y,
-            ax: per.ax,
-            ay: per.ay
-        }
+
+        this.selected_points.forEach((x,i)=>{
+            if(this.context=='move') {
+                per = this.getCoords({
+                    clientX: x.x + (e.clientX-x.original.x),
+                    clientY: x.y + (e.clientY-x.original.y)
+                })
+                console.log(x.x + (e.clientX-x.original.x))
+            }
+            let index_ = x.element.getAttribute("point-index");
+            this.path[index_] = {
+                x: per.x,
+                y: per.y,
+                ax: per.ax,
+                ay: per.ay
+            }
+        })
         this.genPoints();
         this.clipPath();
     }
@@ -169,6 +204,7 @@ class Path {
         lines_.forEach(x => x.remove())
 
         let prev = null;
+        this.points = []
         this.path.forEach((x, i) => {
             let p = document.createElement('point');
             let style_ = "left:" + x.x + "%;top:" + x.y + "%;";

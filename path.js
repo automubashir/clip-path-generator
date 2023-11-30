@@ -22,12 +22,21 @@ class Path {
             return console.error("container not found!");
         }
         this.container.addEventListener('mousedown', (e) => {
-            this.getContext(e)
+            if(e.button == 0) {
+                this.getContext(e)
+            } else if(e.button == 2) {
+                if(this.path.length<=3 || e.target.nodeName!='POINT') return;
+                this.removeAtIndex(parseInt(e.target.getAttribute('point-index')))
+                this.genPoints();
+                this.clipPath();
+            }
         })
         this.container.addEventListener('mouseup', (e) => {
-            this.clicked = false;
-            this.selected_point = null;
-            this.container.classList.remove('dragging')
+            if(e.button == 0) {
+                this.clicked = false;
+                this.selected_point = null;
+                this.container.classList.remove('dragging')
+            }
         })
         this.container.addEventListener('mousemove', (e) => {
             this.movePoint(e)
@@ -87,7 +96,7 @@ class Path {
 
         if (this.context == 'path' && !this.closed) {
             this.header.setAttribute("hint", "path is not closed");
-            this.header.setAttribute("hint-desc", "touch green dot to close path")
+            this.header.setAttribute("hint-desc", "touch green dot to close path - min 3 dots")
             this.startPath(e);
         }
     }
@@ -133,9 +142,19 @@ class Path {
         let left_ = this.path.slice(0, index);
         temp.push(...left_)
         temp.push(obj)
-        console.log(obj)
         for (let i = index + 1; i < new_length; i++) {
             temp.push(this.path[i - 1])
+        }
+        this.path = temp;
+    }
+
+    removeAtIndex = (index) => {
+        let temp = []
+        let new_length = this.path.length - 1;
+        let left_ = this.path.slice(0, index);
+        temp.push(...left_)
+        for (let i = index; i < new_length; i++) {
+            temp.push(this.path[i+1])
         }
         this.path = temp;
     }

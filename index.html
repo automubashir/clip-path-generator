@@ -8,13 +8,23 @@
     <link rel="stylesheet" type="text/css" href="styles.css" />
 </head>
 
-<body>
-    <div class="header" hint="Click box to start drawing!" hint-desc="click green dot to close path"></div>
+<body oncontextmenu="return false;">
+    <div class="header" hint="Click box to start drawing!" hint-desc="add three dots, minimum"></div>
     <div class="path-container">
         <div class="path-box" id="container">
             <div class="clipped-box"></div>
         </div>
     </div>
+
+    <help>
+        <h3 class="title">HELP</h3>
+        <div class="help-list">
+            <div class="help-item">Left-Click to add point</div>
+            <div class="help-item">Right-click to remove point</div>
+            <div class="help-item">Drag point to transform path</div>
+            <div class="help-item">Click path borders to add multiple points</div>
+        </div>
+    </help>
 
     <footer class="footer">
         <code class="code-snippet"></code>

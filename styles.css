@@ -61,6 +61,34 @@ body {
     font-size: 1rem;
 }
 
+help {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    border-radius: 8px;
+    padding: 1rem;
+    background: linear-gradient(90deg, rgba(0,0,0,0.2), rgba(210,210,210,0.7), rgba(150,150,150,0.3));
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+help .title {
+    font-weight: 400;
+    text-align: center;
+}
+
+help .help-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+help .help-item {
+    padding: 0.5rem;
+    background: rgba(240,240,240,1);
+    border-radius: 5px;
+}
+
 .path-container {
     width: 100%;
     margin-top: 5rem;
@@ -89,6 +117,10 @@ body {
 .path-closing .clipped-box,
 .path-closed .clipped-box {
     opacity: 1;
+}
+
+.path-closed .clipped-box {
+    cursor: move;
 }
 
 .path-closed poinat,

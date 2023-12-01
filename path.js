@@ -38,9 +38,11 @@ class Path {
                 this.selected_points = [];
                 this.container.classList.remove('dragging')
             }
+            this.genStrings();
         })
         this.container.addEventListener('mousemove', (e) => {
             this.movePoint(e)
+            this.genStrings();
         })
         this.container.addEventListener('mouseover', (e) => {
             if (e.target.nodeName === "POINT") {

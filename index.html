@@ -16,24 +16,42 @@
         </div>
     </div>
 
-    <help>
-        <h3 class="title">HELP</h3>
-        <div class="help-list">
-            <div class="help-item">Left-Click to add point</div>
-            <div class="help-item">Right-click to remove point</div>
-            <div class="help-item">Drag point to transform path</div>
-            <div class="help-item">Click path borders to add points</div>
-            <div class="help-item">Drag path from inside to move</div>
-        </div>
-    </help>
+    <leftbar>
+        <help class="cpg-card">
+            <h3 class="title">HELP</h3>
+            <div class="cpg-list">
+                <div class="cpg-item">Left-Click to add point</div>
+                <div class="cpg-item">Right-click to remove point</div>
+                <div class="cpg-item">Drag point to transform path</div>
+                <div class="cpg-item">Click path borders to add points</div>
+                <div class="cpg-item">Drag path from inside to move</div>
+            </div>
+        </help>
+    </leftbar>
 
-    <stats>
-        <h3 class="title">STATS</h3>
-        <div class="stats-list">
-            <div class="stats-item">Total Points: <span id="total_points">0</span></div>
-            <div class="stats-item">Path Status: <span id="is_closed">OPEN</span></div>
-        </div>
-    </stats>
+    <rightbar>
+        <stats class="cpg-card">
+            <h3 class="title">STATS</h3>
+            <div class="cpg-list">
+                <div class="cpg-item">Total Points: <span id="total_points">0</span></div>
+                <div class="cpg-item">Path Status: <span id="is_closed">OPEN</span></div>
+            </div>
+        </stats>
+    
+        <actions class="cpg-card">
+            <h3 class="title">ACTIONS</h3>
+            <div class="cpg-list">
+                <div class="cpg-item">
+                    <span></span>
+                    <span>
+                        <undo-btn class="cpg-btn" id="undo" title="undo">&olarr;</undo-btn>
+                        <redo-btn class="cpg-btn" id="redo" title="redo">&orarr;</red-btn>
+                    </span>
+                    <span></span>
+                </div>
+            </div>
+        </actions>
+    </rightbar>
 
     <footer class="footer">
         <code class="code-snippet" contenteditable=""></code>

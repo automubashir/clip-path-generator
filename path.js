@@ -13,8 +13,24 @@ class Path {
         this.footer = document.querySelector("footer");
         this.code_snippet = document.querySelector(".code-snippet");
         this.copy_btn = document.querySelector("copy-code");
-        this.anim_btn = document.querySelector("anim-btn")
+        this.anim_btn = document.querySelector("anim-btn");
+        this.undo_btn = document.querySelector("undo-btn");
+        this.redo_btn = document.querySelector("redo-btn");
         this.header = document.querySelector(".header");
+        this.state = {
+            path: this.path,
+            closed: this.closed,
+            path_str: this.path_str,
+            init_pos: this.init_pos,
+            clicked: this.clicked,
+            selected_points: this.selected_points,
+            context: this.context,
+            points: this.points,
+        }
+        this.states = [];
+        this.history = [];
+        this.resetHistory();
+        this.pushState();
     }
 
     init = (e) => {
@@ -22,23 +38,25 @@ class Path {
             return console.error("container not found!");
         }
         this.container.addEventListener('mousedown', (e) => {
-            if (e.button == 0) {
-                this.getContext(e)
-            } else if (e.button == 2) {
+            if (e.button == 0) { //left mouse button clicked
+                this.getContext(e);
+            } else if (e.button == 2) { //right mouse button clicked
                 if (this.path.length <= 3 || e.target.nodeName != 'POINT') return;
                 this.removeAtIndex(parseInt(e.target.getAttribute('point-index')))
                 this.genPoints();
                 this.clipPath();
+                this.pushState();
             }
             this.genStrings();
         })
         this.container.addEventListener('mouseup', (e) => {
-            if (e.button == 0) {
+            if (e.button == 0) { //left mouse button clicked
                 this.clicked = false;
                 this.selected_points = [];
                 this.container.classList.remove('dragging')
-            }
-            this.genStrings();
+                this.genStrings();
+                this.pushState();
+            } 
         })
         this.container.addEventListener('mousemove', (e) => {
             this.movePoint(e)
@@ -57,9 +75,10 @@ class Path {
             this.stringToPath(e);
             this.genPoints();
             this.clipPath();
+            this.pushState();
             this.genStrings('others')
         })
-        this.footer.addEventListener('click', (e) => {
+        document.body.addEventListener('click', (e) => {    
             if (e.target.nodeName === 'COPY-CODE') {
                 this.copyToClipboard(this.path_str)
             }
@@ -68,6 +87,12 @@ class Path {
                 setTimeout(x => {
                     e.target.innerHTML = 'Animate Path'
                 }, 1500)
+            }
+            if(e.target.nodeName === 'UNDO-BTN') {
+                this.undo();
+            }
+            if(e.target.nodeName === 'REDO-BTN') {
+                this.redo();
             }
         })
         setInterval(x => {
@@ -100,9 +125,7 @@ class Path {
             if (e.target.getAttribute("point-index") == '0') {
                 if (this.path.length > 2) {
                     this.closed = true;
-                    this.container.classList.add("path-closed");
-                    this.header.setAttribute("hint", "path is closed")
-                    this.header.setAttribute("hint-desc", "touch shape border to add points")
+                    this.resolveClosed();
                     this.genPoints();
                 }
             }
@@ -310,5 +333,102 @@ class Path {
         total_points.innerHTML = this.path.length
         let el = document.querySelector("#is_closed");
         el.innerHTML = this.closed ? 'CLOSED' : 'OPEN';
+    }
+
+    
+    resetHistory() {
+        this.history = [];
+        this.states = [].concat(this.history);
+        this.resolveBtn();
+    }
+    redo() {
+        let index = this.states.length-1;
+        let last_ = this.history[index+1];
+        if(!last_) return;
+        this.state = last_;
+        this.states.push(this.state);
+        this.path = [].concat(this.state.path);
+        this.closed = this.state.closed;
+        this.path_str = this.state.path_str;
+        this.init_pos = this.state.init_pos;
+        this.clicked = this.state.clicked;
+        this.selected_points = [].concat(this.state.selected_points);
+        this.context = this.state.context;
+        this.points = [].concat(this.state.points);
+        this.resolveBtn();
+        // this.stringToPath(e);
+        this.genPoints();
+        this.clipPath()
+        this.genStrings();
+        this.resolveClosed();
+    }
+    undo() {
+        let last_ = this.states.pop();
+        if(!last_ || !this.states.length) return;
+        this.state = this.states.slice(-1)[0];
+        this.path = [].concat(this.state.path);
+        this.closed = this.state.closed;
+        this.path_str = this.state.path_str;
+        this.init_pos = this.state.init_pos;
+        this.clicked = this.state.clicked;
+        this.selected_points = [].concat(this.state.selected_points);
+        this.context = this.state.context;
+        this.points = [].concat(this.state.points);
+        this.resolveBtn();
+        // this.stringToPath(e);
+        this.genPoints();
+        this.clipPath()
+        this.genStrings();
+        this.resolveClosed();
+    }
+
+    resolveBtn() {
+        if((this.states.length-1)<1) {
+            this.undo_btn.setAttribute('disabled','true');
+        } else {
+            this.undo_btn.removeAttribute('disabled');
+        }
+        let index = this.states.length;
+        if(!this.history[index]) {
+            this.redo_btn.setAttribute('disabled','true');
+        } else {
+            this.redo_btn.removeAttribute('disabled');
+        }
+    }
+
+    
+    pushState(context_='path') {
+        this.state = {
+            path: [].concat(this.path),
+            closed: this.closed,
+            path_str: this.path_str,
+            init_pos: this.init_pos,
+            clicked: this.clicked,
+            selected_points: [].concat(this.selected_points),
+            context: context_,
+            points: [].concat(this.points),
+        }
+        
+        this.states.push(this.state);
+        this.history = [].concat(this.states);
+        this.resolveBtn();
+        this.resolveClosed();
+    }
+
+    resolveClosed() {
+        if(this.states.length<2) {
+            this.container.classList.remove("path-closed");
+            this.header.setAttribute("hint", "Click box to start drawing!")
+            this.header.setAttribute("hint-desc", "add three dots minimum")
+        }
+        else if(this.closed) {
+            this.container.classList.add("path-closed");
+            this.header.setAttribute("hint", "path is closed")
+            this.header.setAttribute("hint-desc", "touch shape border to add points")
+        } else {
+            this.container.classList.remove("path-closed");
+            this.header.setAttribute("hint", "path is not closed")
+            this.header.setAttribute("hint-desc", "touch green dot to close path - min 3 dots")
+        }
     }
 }

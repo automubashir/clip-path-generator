@@ -95,6 +95,14 @@ class Path {
                 this.redo();
             }
         })
+        document.addEventListener('keydown',(e) => {
+            if(e.keyCode==90 && e.ctrlKey) { //ctrl + z
+                this.undo();
+            }
+            if(e.keyCode==89 && e.ctrlKey) { //ctrl + y
+                this.redo();
+            }
+        })
         setInterval(x => {
 
         }, 1)
